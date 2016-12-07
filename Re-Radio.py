@@ -1,28 +1,64 @@
-# Import Libraries 
-import os #Gives Python access to Linux commands 
-import time #Proves time related commands 
-import RPi.GPIO as GPIO #Gives Python access to the GPIO pins 
-GPIO.setmode(GPIO.BCM) #Set the GPIO pin naming mode 
-GPIO.setwarnings(False) #Supress warnings
+from RPi import GPIO
+from time import sleep
 
-# Set pin 25 as an input pin 
-ButtonPin = 25 
-GPIO.setup(ButtonPin, GPIO.IN) 
-print("---------------") 
-print(" Button + GPIO ") 
-print("---------------") 
+import time
 
-print(GPIO.input(ButtonPin)) 
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_SSD1306
 
-# The commands indented after this ‘while’ will be repeated 
-# forever or until ‘Ctrl+c’ is pressed. 
-while True: 
-	# If the button is pressed, ButtonPin will be ‘false’ 
-	if GPIO.input(ButtonPin) == False: 
-		print("Button Pressed") 
-		print(GPIO.input(ButtonPin)) time.sleep(1) # Sleep for 1 second 
-	else: 
-		os.system('clear') # Clears the screen 
-		print("Waiting for you to press a button") 
-		
-	time.sleep(0.5) # Sleep for 0.5 seconds
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
+
+clk = 17
+dt = 18
+RST = 24
+
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(clk, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(dt, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+disp = Adafruit_SSD1306.SSD1306_128_32(rst=RST)
+
+disp.begin()
+disp.clear()
+disp.display()
+
+width = disp.width
+height = disp.height
+image = Image.new('1', (width, height))
+
+draw = ImageDraw.Draw(image)
+
+draw.rectangle((0,0,width,height), outline=0, fill=0)
+
+padding = 2
+top = padding
+bottom = height-padding
+
+#font = ImageFont.load_default()
+font = ImageFont.truetype('Minecraftia.ttf', 8)
+
+counter = 0
+clkLastState = GPIO.input(clk)
+
+try:
+
+        while True:
+                clkState = GPIO.input(clk)
+                dtState = GPIO.input(dt)
+                if clkState != clkLastState:
+                        if dtState != clkState:
+                                counter += 1
+                        else:
+                                counter -= 1
+			disp.clear()	
+                        print counter
+			draw.text((x, top),  str(counter),  font=font, fill=255)
+                clkLastState = clkState
+                sleep(0.01)
+finally:
+disp.image(image)
+disp.display()	
+GPIO.cleanup()
