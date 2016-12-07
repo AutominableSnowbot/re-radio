@@ -36,9 +36,10 @@ draw.rectangle((0,0,width,height), outline=0, fill=0)
 padding = 2
 top = padding
 bottom = height-padding
+x = padding
 
-#font = ImageFont.load_default()
-font = ImageFont.truetype('Minecraftia.ttf', 8)
+font = ImageFont.load_default()
+#font = ImageFont.truetype('Minecraftia.ttf', 8)
 
 counter = 0
 clkLastState = GPIO.input(clk)
@@ -56,9 +57,10 @@ try:
 			disp.clear()	
                         print counter
 			draw.text((x, top),  str(counter),  font=font, fill=255)
+		disp.image(image)
+		disp.display()	
                 clkLastState = clkState
                 sleep(0.01)
 finally:
-disp.image(image)
-disp.display()	
-GPIO.cleanup()
+		
+	GPIO.cleanup()
